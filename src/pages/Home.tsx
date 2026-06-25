@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { products } from '../data/products';
-import { ArrowRight, Star, Shield, Leaf, Heart, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowRight, Star, Shield, Leaf, Heart, RefreshCw } from 'lucide-react';
 
 export const Home: React.FC = () => {
   useEffect(() => {
