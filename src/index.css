@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #2d6a4f; /* Glow & Green Forest Green */
+  --sage-green: #95d5b2;
+  --sage-light: #d8f3dc;
+  --warm-gold: #d4a373;
+  --warm-cream: #f5f0e8;
+  --white-soft: #faf9f6;
+  --charcoal: #2b2d2e;
+  --warm-brown: #8b7355;
+  --earth-rose: #b5838d;
+  --olive: #6b705c;
+  
+  --secondary: #d8f3dc; /* Light Sage Green Background */
+  --accent: #d4a373; /* Warm Gold */
+  --dark: #2b2d2e; /* Charcoal dark */
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #faf9f6; /* white-soft */
+  color: #2b2d2e; /* charcoal */
+}
