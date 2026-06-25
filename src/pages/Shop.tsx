@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { products } from '../data/products';
 import { Search, SlidersHorizontal, Leaf, Sparkles } from 'lucide-react';
@@ -6,6 +6,21 @@ import { Search, SlidersHorizontal, Leaf, Sparkles } from 'lucide-react';
 export const Shop: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+
+  useEffect(() => {
+    document.title = "Shop 100% Natural Skincare | Glow & Green Collection";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Explore our curated selection of premium natural skincare products. From gentle cleansers to regenerative serums, find everything you need for a sustainable, non-toxic beauty ritual.");
+    }
+    
+    return () => {
+      document.title = "Glow & Green | Premium Natural & Eco-Friendly Skincare";
+      if (metaDescription) {
+        metaDescription.setAttribute("content", "Discover 100% natural, ethically sourced skincare. Glow & Green offers premium, plant-powered solutions for healthy, radiant skin without the toxic chemicals. Shop our eco-friendly collection today.");
+      }
+    };
+  }, []);
 
   // Dynamically extract categories
   const categories = useMemo(() => {
