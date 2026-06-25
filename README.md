@@ -1,73 +1,74 @@
-# React + TypeScript + Vite
+# Glow & Green Storefront
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Glow & Green offers a curated selection of premium, 100% natural, and eco-friendly skincare products. This repository contains the frontend implementation for the Glow & Green e-commerce storefront.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Framework:** React + Vite
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS v4
+- **Routing:** React Router DOM
+- **State Management:** React Context API (Cart & Subscriptions)
+- **Payments:** Stripe integration (ready for live mode)
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
 
-## Expanding the ESLint configuration
+- Node.js (v18 or higher)
+- npm or bun
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Installation
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd glow-and-green
+   ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Environment Variables
+
+To enable Stripe payment processing, you need to configure the following environment variables in your hosting environment (e.g., Vercel, Netlify) or a local `.env` file:
+
+| Variable | Description |
+| --- | --- |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Your Stripe Publishable Key (`pk_test_...` or `pk_live_...`). |
+| `STRIPE_SECRET_KEY` | (Backend) Your Stripe Secret Key (`sk_test_...` or `sk_live_...`). |
+
+Refer to `STRIPE_LIVE_INSTRUCTIONS.md` for detailed steps on how to transition from simulated checkout to live Stripe payments.
+
+## Deployment
+
+The project is configured to bind to `0.0.0.0:3000` for public accessibility.
+
+To build the project for production:
+```bash
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+To preview the production build:
+```bash
+npm run preview
 ```
+
+## Project Structure
+
+- `src/components`: Reusable UI components (Navbar, Footer).
+- `src/pages`: Main application pages (Home, Shop, ProductDetails, Cart, AboutUs, Sustainability).
+- `src/context`: Global state management (CartContext).
+- `src/data`: Product catalog and static data.
+- `public`: Static assets (Logo, Banners).
+
+## License
+
+All rights reserved. Glow & Green 2026.
