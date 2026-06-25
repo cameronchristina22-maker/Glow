@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { products } from '../data/products';
-import { ArrowRight, Star, Shield, Leaf, Heart, RefreshCw } from 'lucide-react';
+import { ArrowRight, Star, Shield, Leaf, Heart, RefreshCw, Sparkles } from 'lucide-react';
 
 export const Home: React.FC = () => {
+  useEffect(() => {
+    document.title = "Glow & Green | Premium Natural & Eco-Friendly Skincare";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", "Discover 100% natural, ethically sourced skincare. Glow & Green offers premium, plant-powered solutions for healthy, radiant skin without the toxic chemicals. Shop our eco-friendly collection today.");
+    }
+  }, []);
   // Select top 3 products as featured
   const featuredProducts = products.slice(0, 3);
 
