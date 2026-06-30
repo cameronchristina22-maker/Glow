@@ -84,8 +84,8 @@ export const products: Product[] = [
     ],
     ingredients: "Water, Organic Butyrospermum Parkii (Shea) Butter, Olive Squalane, Ginkgo Biloba Leaf Extract, Cetearyl Olivate, Sorbitan Olivate, Organic Glycerin, Glyceryl Stearate, Sodium Phytate, Benzyl Alcohol, Salicylic Acid, Sorbic Acid, Citrus Aurantium Bergamia (Bergamot) Fruit Oil.",
     directions: "Massage a pea-sized amount onto face and neck after serum application. Perfect for use morning and night under makeup.",
-    price: 42.00,
-    subscriptionPrice: 35.70,
+    price: 38.00,
+    subscriptionPrice: 32.30,
     image: "https://images.unsplash.com/photo-1601049676099-e7ed07d825b0?auto=format&fit=crop&w=600&q=80",
     category: "Moisturizer",
     volume: "50ml / 1.7 fl oz"
