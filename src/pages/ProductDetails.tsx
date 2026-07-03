@@ -1,19 +1,19 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { products } from '../data/products';
+import { STRIPE_LINKS } from '../data/stripeLinks';
 import { useCart } from '../context/CartContext';
-import { ArrowLeft, Star, Leaf, CheckCircle, ShieldCheck, ShoppingCart, Calendar, Info } from 'lucide-react';
+import { ArrowLeft, Star, Leaf, CheckCircle, ShieldCheck, ShoppingCart, Calendar, Info, ExternalLink } from 'lucide-react';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { addToCart } = useCart();
 
   const [quantity, setQuantity] = useState(1);
-  const [isSubscription, setIsSubscription] = useState(true); // Default to sub since it's our KPI/focus
+  const [isSubscription, setIsSubscription] = useState(true);
   const [activeTab, setActiveTab] = useState<'description' | 'ingredients' | 'directions'>('description');
   const [addedNotification, setAddedNotification] = useState(false);
 
-  // Find product
   const product = useMemo(() => {
     return products.find((p) => p.id === id);
   }, [id]);
@@ -41,6 +41,8 @@ export const ProductDetails: React.FC = () => {
     setAddedNotification(true);
     setTimeout(() => setAddedNotification(false), 3000);
   };
+
+  const stripeLink = STRIPE_LINKS[product.id];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
@@ -98,8 +100,6 @@ export const ProductDetails: React.FC = () => {
               {product.name}
             </h1>
             <p className="text-stone-500 text-sm italic">{product.subtitle}</p>
-
-            {/* Fake Rating for luxury branding */}
             <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-0.5 text-amber-400">
                 {[...Array(5)].map((_, i) => (
@@ -193,36 +193,51 @@ export const ProductDetails: React.FC = () => {
             </div>
           </div>
 
-          {/* Add to Cart Controls */}
-          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center bg-stone-50 p-4 rounded-2xl border border-stone-100">
-            {/* Quantity Selector */}
-            <div className="flex items-center justify-between border border-stone-200 bg-white rounded-full px-4 py-2 sm:py-2.5">
-              <span className="text-xs text-stone-500 font-semibold uppercase mr-4">Quantity:</span>
-              <div className="flex items-center space-x-4 font-bold text-stone-800">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="hover:text-emerald-700 transition-colors w-6 text-center"
-                >
-                  -
-                </button>
-                <span>{quantity}</span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="hover:text-emerald-700 transition-colors w-6 text-center"
-                >
-                  +
-                </button>
+          {/* Add to Cart & Buy Now Controls */}
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center bg-stone-50 p-4 rounded-2xl border border-stone-100">
+              {/* Quantity Selector */}
+              <div className="flex items-center justify-between border border-stone-200 bg-white rounded-full px-4 py-2 sm:py-2.5">
+                <span className="text-xs text-stone-500 font-semibold uppercase mr-4">Quantity:</span>
+                <div className="flex items-center space-x-4 font-bold text-stone-800">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="hover:text-emerald-700 transition-colors w-6 text-center"
+                  >
+                    -
+                  </button>
+                  <span>{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="hover:text-emerald-700 transition-colors w-6 text-center"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
+
+              {/* Add to Cart Button */}
+              <button
+                onClick={handleAddToCart}
+                className="flex-grow inline-flex items-center justify-center px-6 py-3.5 border border-transparent rounded-full text-white bg-emerald-800 hover:bg-emerald-950 font-bold shadow transition-all duration-200 hover:shadow-md"
+              >
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                Add to Ritual — ${((isSubscription ? product.subscriptionPrice : product.price) * quantity).toFixed(2)}
+              </button>
             </div>
 
-            {/* Add Button */}
-            <button
-              onClick={handleAddToCart}
-              className="flex-grow inline-flex items-center justify-center px-6 py-3.5 border border-transparent rounded-full text-white bg-emerald-800 hover:bg-emerald-950 font-bold shadow transition-all duration-200 hover:shadow-md"
-            >
-              <ShoppingCart className="mr-2 h-5 w-5" />
-              Add to Skincare Ritual — ${((isSubscription ? product.subscriptionPrice : product.price) * quantity).toFixed(2)}
-            </button>
+            {/* Stripe Buy Now Button */}
+            {stripeLink && (
+              <a
+                href={stripeLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-6 py-3.5 border-2 border-amber-400 rounded-full text-stone-900 bg-amber-400 hover:bg-amber-500 font-bold shadow-sm transition-all duration-200 hover:shadow-md"
+              >
+                <ExternalLink className="mr-2 h-5 w-5" />
+                Buy Now — ${product.price.toFixed(2)} (via Stripe)
+              </a>
+            )}
           </div>
 
           {/* Notification Toast */}
@@ -244,7 +259,7 @@ export const ProductDetails: React.FC = () => {
               <Calendar className="h-4 w-4 text-emerald-700 mt-0.5 flex-shrink-0" />
               <div>
                 <span className="font-bold text-stone-800 block mb-0.5">Refill Schedule:</span>
-                Refill shipments occur every 30 days. We send a fresh eco-cartridge or glass bottle directly in minimal packaging. You save **15% on every shipment** ($... compared to retail) and can edit or cancel easily within your account page.
+                Refill shipments occur every 30 days. We send a fresh eco-cartridge or glass bottle directly in minimal packaging. You save **15% on every shipment** and can edit or cancel easily within your account page.
               </div>
             </div>
           )}

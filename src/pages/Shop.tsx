@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { products } from '../data/products';
-import { Search, SlidersHorizontal, Leaf, Sparkles } from 'lucide-react';
+import { STRIPE_LINKS } from '../data/stripeLinks';
+import { Search, SlidersHorizontal, Leaf, Sparkles, ExternalLink } from 'lucide-react';
 
 export const Shop: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -155,12 +156,23 @@ export const Shop: React.FC = () => {
                     </span>
                   </div>
                   
-                  <Link
-                    to={`/product/${product.id}`}
-                    className="px-5 py-2.5 text-xs font-semibold rounded-full bg-emerald-800 text-white hover:bg-emerald-900 transition-all duration-200 shadow-sm hover:shadow"
-                  >
-                    Configure Ritual
-                  </Link>
+                  <div className="flex flex-col gap-2">
+                    <a
+                      href={STRIPE_LINKS[product.id]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 text-xs font-bold rounded-full bg-amber-400 text-stone-900 hover:bg-amber-500 transition-all duration-200 shadow-sm hover:shadow flex items-center gap-1"
+                    >
+                      Buy Now — ${product.price.toFixed(2)}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                    <Link
+                      to={`/product/${product.id}`}
+                      className="px-4 py-2 text-xs font-semibold rounded-full bg-emerald-800 text-white hover:bg-emerald-900 transition-all duration-200 shadow-sm hover:shadow"
+                    >
+                      Configure Ritual
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { STRIPE_LINKS, FULL_RITUAL_SET_LINK } from '../data/stripeLinks';
 import { 
   ShoppingBag, Trash2, ArrowLeft, ShieldCheck, 
-  CreditCard, Truck, Calendar, CheckCircle, Lock, Gift 
+  Truck, Calendar, CheckCircle, Gift, ExternalLink 
 } from 'lucide-react';
 
 export const Cart: React.FC = () => {
@@ -16,67 +17,27 @@ export const Cart: React.FC = () => {
     cartCount 
   } = useCart();
 
-  // Checkout Form State
+  // Billing / Shipping Form State
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [zip, setZip] = useState('');
   
-  // Payment card state
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  
   // UI Flow State
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'checkout' | 'success'>('cart');
-  const [orderId, setOrderId] = useState('');
 
   const shippingCost = cartSubtotal >= 50 ? 0 : 5.99;
-  const carbonOffset = 0.99; // Eco contribution option
+  const carbonOffset = 0.99;
   const [includeOffset, setIncludeOffset] = useState(true);
   
   const totalCost = cartSubtotal + shippingCost + (includeOffset ? carbonOffset : 0);
 
-  // Card formatting helpers
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    const formatted = value.match(/.{1,4}/g)?.join(' ') || '';
-    setCardNumber(formatted.substring(0, 19));
-  };
-
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    let formatted = value;
-    if (value.length > 2) {
-      formatted = `${value.substring(0, 2)}/${value.substring(2, 4)}`;
-    }
-    setCardExpiry(formatted.substring(0, 5));
-  };
-
-  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    setCardCvv(value.substring(0, 4));
-  };
-
-  const handleCheckoutSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !name || !address || !city || !zip || !cardNumber || !cardExpiry || !cardCvv) {
-      alert('Please fill out all billing, shipping, and credit card details.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    // Simulate payment call via Stripe
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setOrderId(`GG-${Math.floor(100000 + Math.random() * 900000)}`);
-      setCheckoutStep('success');
-      clearCart();
-    }, 2500);
-  };
+  // Check if cart has all 5 products (any quantity) — qualifies for bundle
+  const allProductIds = cart.map(item => item.product.id);
+  const hasAllFiveProducts = ["verdant-dew-gentle-cleanser", "emerald-mist-balancing-toner", "phyto-glow-regenerative-serum", "luminous-leaf-whipped-moisturizer", "aura-bloom-face-oil"].every(
+    id => allProductIds.includes(id)
+  );
 
   if (checkoutStep === 'success') {
     return (
@@ -95,10 +56,6 @@ export const Cart: React.FC = () => {
 
         <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100 text-left space-y-3">
           <div className="flex justify-between text-xs text-stone-500 border-b border-stone-200/50 pb-2">
-            <span>Order Reference ID:</span>
-            <span className="font-mono font-bold text-stone-800">{orderId}</span>
-          </div>
-          <div className="flex justify-between text-xs text-stone-500 border-b border-stone-200/50 pb-2">
             <span>Delivery Address:</span>
             <span className="text-stone-800 font-medium">{address}, {city}, {zip}</span>
           </div>
@@ -110,18 +67,18 @@ export const Cart: React.FC = () => {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="text-xs text-stone-400">
-            For subscriptions: Refill shipments occur automatically every 30 days. You will receive an email notice 3 days before any auto-shipment triggers.
-          </div>
-          <Link
-            to="/shop"
-            className="inline-flex items-center justify-center px-8 py-3.5 bg-emerald-800 hover:bg-emerald-950 text-white rounded-full font-bold text-sm transition-colors shadow"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Continue Clean Beauty Journey
-          </Link>
+        <div className="space-y-2 text-xs text-stone-400">
+          <p>Stripe will send you a payment receipt by email.</p>
+          <p>For subscriptions: Refill shipments occur automatically every 30 days. You will receive an email notice 3 days before any auto-shipment triggers.</p>
         </div>
+
+        <Link
+          to="/shop"
+          className="inline-flex items-center justify-center px-8 py-3.5 bg-emerald-800 hover:bg-emerald-950 text-white rounded-full font-bold text-sm transition-colors shadow"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Continue Clean Beauty Journey
+        </Link>
       </div>
     );
   }
@@ -157,7 +114,7 @@ export const Cart: React.FC = () => {
         </h1>
         <p className="text-stone-500 text-sm">
           {checkoutStep === 'checkout' 
-            ? 'Enter your shipping address and card details to finalize order.' 
+            ? 'Enter your shipping address to prepare your order.' 
             : `Review your selections. ${cartCount} items currently in cart.`}
         </p>
       </div>
@@ -170,78 +127,91 @@ export const Cart: React.FC = () => {
             <div className="space-y-4">
               {cart.map((item) => {
                 const price = item.isSubscription ? item.product.subscriptionPrice : item.product.price;
+                const stripeLink = STRIPE_LINKS[item.product.id];
                 return (
                   <div
                     key={`${item.product.id}-${item.isSubscription}`}
-                    className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-200 hover:border-stone-200"
+                    className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm flex flex-col gap-4 transition-all duration-200 hover:border-stone-200"
                   >
-                    {/* Left: Product info */}
-                    <div className="flex items-center space-x-4">
-                      <div className="h-20 w-20 rounded-xl overflow-hidden bg-stone-50 flex-shrink-0">
-                        <img
-                          src={item.product.image}
-                          alt={item.product.name}
-                          className="w-full h-full object-cover"
-                        />
+                    {/* Top row: product info */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="h-20 w-20 rounded-xl overflow-hidden bg-stone-50 flex-shrink-0">
+                          <img
+                            src={item.product.image}
+                            alt={item.product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="font-medium text-stone-900 hover:text-emerald-800 text-base">
+                            <Link to={`/product/${item.product.id}`}>{item.product.name}</Link>
+                          </h3>
+                          <p className="text-stone-400 text-xs">{item.product.volume}</p>
+                          {item.isSubscription ? (
+                            <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              <Calendar className="h-3 w-3 text-emerald-700 mr-1" />
+                              Monthly Refill
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-stone-600 bg-stone-100 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              One-Time Shipment
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <h3 className="font-medium text-stone-900 hover:text-emerald-800 text-base">
-                          <Link to={`/product/${item.product.id}`}>{item.product.name}</Link>
-                        </h3>
-                        <p className="text-stone-400 text-xs">{item.product.volume}</p>
-                        
-                        {/* Selected model label */}
-                        {item.isSubscription ? (
-                          <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                            <Calendar className="h-3 w-3 text-emerald-700 mr-1" />
-                            Monthly Refill
+
+                      {/* Controls */}
+                      <div className="flex flex-wrap items-center justify-between sm:justify-end gap-4">
+                        <div className="flex items-center space-x-3 border border-stone-200 rounded-full px-3 py-1 bg-white">
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.isSubscription, item.quantity - 1)}
+                            className="hover:text-emerald-700 text-stone-500 font-bold transition-colors w-4"
+                          >
+                            -
+                          </button>
+                          <span className="font-semibold text-stone-800 text-sm w-4 text-center">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.isSubscription, item.quantity + 1)}
+                            className="hover:text-emerald-700 text-stone-500 font-bold transition-colors w-4"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="text-stone-900 font-bold block text-base">
+                            ${(price * item.quantity).toFixed(2)}
                           </span>
-                        ) : (
-                          <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-stone-600 bg-stone-100 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                            One-Time Shipment
+                          <span className="text-stone-400 text-xs block">
+                            (${price.toFixed(2)} each)
                           </span>
-                        )}
+                        </div>
+
+                        <button
+                          onClick={() => removeFromCart(item.product.id, item.isSubscription)}
+                          className="text-stone-300 hover:text-red-500 p-2 rounded-full hover:bg-stone-50 transition-all duration-200"
+                          aria-label="Remove item"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
                       </div>
                     </div>
 
-                    {/* Middle / Right: Controls */}
-                    <div className="flex flex-wrap items-center justify-between sm:justify-end gap-6 sm:gap-12">
-                      {/* Quantity Selector */}
-                      <div className="flex items-center space-x-3 border border-stone-200 rounded-full px-3 py-1 bg-white">
-                        <button
-                          onClick={() => updateQuantity(item.product.id, item.isSubscription, item.quantity - 1)}
-                          className="hover:text-emerald-700 text-stone-500 font-bold transition-colors w-4"
+                    {/* Buy this item now via Stripe */}
+                    {stripeLink && (
+                      <div className="flex justify-end pt-2 border-t border-stone-50">
+                        <a
+                          href={stripeLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-4 py-2 text-xs font-bold rounded-full bg-amber-400 text-stone-900 hover:bg-amber-500 transition-all duration-200 shadow-sm hover:shadow"
                         >
-                          -
-                        </button>
-                        <span className="font-semibold text-stone-800 text-sm w-4 text-center">{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(item.product.id, item.isSubscription, item.quantity + 1)}
-                          className="hover:text-emerald-700 text-stone-500 font-bold transition-colors w-4"
-                        >
-                          +
-                        </button>
+                          Buy This Item Only — ${item.product.price.toFixed(2)}
+                          <ExternalLink className="h-3 w-3 ml-1.5" />
+                        </a>
                       </div>
-
-                      {/* Item Total Price */}
-                      <div className="text-right">
-                        <span className="text-stone-900 font-bold block text-base">
-                          ${(price * item.quantity).toFixed(2)}
-                        </span>
-                        <span className="text-stone-400 text-xs block">
-                          (${price.toFixed(2)} each)
-                        </span>
-                      </div>
-
-                      {/* Remove Button */}
-                      <button
-                        onClick={() => removeFromCart(item.product.id, item.isSubscription)}
-                        className="text-stone-300 hover:text-red-500 p-2 rounded-full hover:bg-stone-50 transition-all duration-200"
-                        aria-label="Remove item"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
+                    )}
                   </div>
                 );
               })}
@@ -263,13 +233,12 @@ export const Cart: React.FC = () => {
               </div>
             </div>
           ) : (
-            /* BILLING, SHIPPING & STRIPE MOCK CARD INFO */
-            <form onSubmit={handleCheckoutSubmit} className="bg-white p-6 sm:p-8 rounded-3xl border border-stone-100 shadow-sm space-y-6">
+            /* BILLING & SHIPPING — no fake card fields */
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-stone-100 shadow-sm space-y-6">
               <h2 className="text-xl font-serif font-semibold text-stone-900 pb-2 border-b border-stone-100">
                 Billing &amp; Delivery Details
               </h2>
               
-              {/* Personal Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider">Full Name</label>
@@ -295,7 +264,6 @@ export const Cart: React.FC = () => {
                 </div>
               </div>
 
-              {/* Shipping Address */}
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider">Street Address</label>
                 <input
@@ -333,69 +301,56 @@ export const Cart: React.FC = () => {
                 </div>
               </div>
 
-              {/* Stripe Credit Card Form */}
+              {/* Stripe Checkout buttons — no fake card section */}
               <div className="space-y-4 pt-4 border-t border-stone-100">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-serif font-semibold text-stone-900">
-                    Stripe Secure Card Element
-                  </h2>
-                  <div className="flex items-center text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-1 rounded-full uppercase tracking-wider border border-emerald-100">
-                    <Lock className="h-3 w-3 mr-1" /> SSL Protected
-                  </div>
-                </div>
+                <h2 className="text-xl font-serif font-semibold text-stone-900">
+                  Checkout via Stripe
+                </h2>
+                <p className="text-xs text-stone-500">
+                  Your payment is processed securely on Stripe's hosted checkout page. We never see or store your card details.
+                </p>
 
-                <div className="bg-stone-900 text-white rounded-2xl p-5 sm:p-6 space-y-4 shadow-md relative overflow-hidden">
-                  <div className="absolute top-0 right-0 h-40 w-40 bg-emerald-700/10 rounded-full blur-2xl"></div>
-                  <div className="flex justify-between items-center pb-2 border-b border-stone-800">
-                    <div className="flex items-center space-x-2">
-                      <CreditCard className="h-6 w-6 text-emerald-400" />
-                      <span className="text-xs uppercase tracking-widest font-bold font-sans text-stone-400">G&amp;G Ritual Card</span>
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">Stripe Integration</span>
-                  </div>
-
-                  {/* Card Fields */}
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest">Card Number</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="•••• •••• •••• ••••"
-                        value={cardNumber}
-                        onChange={handleCardNumberChange}
-                        className="block w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-100 placeholder-stone-700 text-sm font-mono tracking-widest focus:outline-none focus:border-emerald-700 transition-colors"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest">Expiration</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="MM/YY"
-                          value={cardExpiry}
-                          onChange={handleExpiryChange}
-                          className="block w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-100 placeholder-stone-700 text-sm font-mono tracking-widest focus:outline-none focus:border-emerald-700 transition-colors"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest">CVV / CVC</label>
-                        <input
-                          type="password"
-                          required
-                          placeholder="•••"
-                          value={cardCvv}
-                          onChange={handleCvvChange}
-                          className="block w-full bg-stone-950 border border-stone-800 rounded-lg p-2.5 text-stone-100 placeholder-stone-700 text-sm font-mono tracking-widest focus:outline-none focus:border-emerald-700 transition-colors"
-                        />
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {/* Full Ritual Set link when all 5 items present */}
+                  {hasAllFiveProducts ? (
+                    <a
+                      href={FULL_RITUAL_SET_LINK}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => { setCheckoutStep('success'); clearCart(); }}
+                      className="flex-1 inline-flex items-center justify-center px-6 py-3.5 bg-emerald-800 hover:bg-emerald-950 text-white rounded-full font-bold text-sm transition-all duration-200 shadow hover:shadow-md"
+                    >
+                      <ShieldCheck className="mr-2 h-5 w-5" />
+                      Get Full Ritual Set — $170
+                      <ExternalLink className="h-4 w-4 ml-2" />
+                    </a>
+                  ) : (
+                    <div className="flex-1 space-y-2">
+                      <p className="text-xs font-bold text-stone-600 uppercase tracking-wider">Buy individually via Stripe:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {cart.map((item) => {
+                          const link = STRIPE_LINKS[item.product.id];
+                          if (!link) return null;
+                          return (
+                            <a
+                              key={item.product.id}
+                              href={link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => { setCheckoutStep('success'); clearCart(); }}
+                              className="inline-flex items-center px-4 py-2 text-xs font-bold rounded-full bg-amber-400 text-stone-900 hover:bg-amber-500 transition-all duration-200 shadow-sm"
+                            >
+                              {item.product.name} — ${item.product.price.toFixed(2)}
+                              <ExternalLink className="h-3 w-3 ml-1" />
+                            </a>
+                          );
+                        })}
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
-              {/* Submit / Action Controls */}
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-between pt-4 border-t border-stone-100">
                 <button
                   type="button"
@@ -404,28 +359,8 @@ export const Cart: React.FC = () => {
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" /> Back to Cart Selections
                 </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 bg-emerald-800 hover:bg-emerald-950 text-white rounded-full font-bold text-sm transition-all duration-200 disabled:opacity-50 shadow hover:shadow-md"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Securing payment via Stripe...
-                    </>
-                  ) : (
-                    <>
-                      <ShieldCheck className="mr-2 h-5 w-5" />
-                      Authorize &amp; Pay ${totalCost.toFixed(2)}
-                    </>
-                  )}
-                </button>
               </div>
-            </form>
+            </div>
           )}
         </div>
 
@@ -470,7 +405,6 @@ export const Cart: React.FC = () => {
                 </span>
               </div>
               
-              {/* Optional carbon offset contribution */}
               <div className="flex items-center justify-between text-stone-600 bg-white p-3 rounded-xl border border-stone-100">
                 <div className="flex items-center space-x-2">
                   <input
@@ -493,11 +427,16 @@ export const Cart: React.FC = () => {
 
             <hr className="border-stone-200/50" />
 
-            {/* Final Cost */}
             <div className="flex justify-between items-baseline text-stone-900 font-bold">
               <span className="text-base font-serif">Estimated Total</span>
               <span className="text-2xl font-serif">${totalCost.toFixed(2)}</span>
             </div>
+
+            {hasAllFiveProducts && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800">
+                <span className="font-bold">Bundle deal available!</span> All 5 products detected in your cart. Save when you purchase the <strong>Full Ritual Set ($170)</strong> via the checkout button.
+              </div>
+            )}
           </div>
 
           {/* Checkout triggers */}
@@ -511,15 +450,14 @@ export const Cart: React.FC = () => {
               </button>
               <div className="flex items-center justify-center space-x-1.5 text-stone-400 text-[10px] uppercase font-bold tracking-widest text-center">
                 <ShieldCheck className="h-4 w-4 text-emerald-700" />
-                <span>Encrypted via Stripe Server</span>
+                <span>Checkout via Stripe Secure</span>
               </div>
             </div>
           )}
 
-          {/* Secure lock reminder */}
           <div className="text-[11px] text-stone-500 bg-stone-100 p-4 rounded-xl border border-stone-200/40 text-center space-y-1">
             <span className="font-bold text-stone-700 block">Stripe Secure Guarantee</span>
-            Glow &amp; Green values your security. All payment info is tokenized and transmitted strictly via SSL directly to Stripe's vaults. We never save raw cards on our database.
+            Glow &amp; Green values your security. All payment info is handled on Stripe's secure, PCI-compliant hosted checkout. We never save raw cards on our database.
           </div>
         </div>
       </div>

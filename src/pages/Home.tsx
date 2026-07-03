@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { products } from '../data/products';
-import { ArrowRight, Star, Shield, Leaf, Heart, RefreshCw } from 'lucide-react';
+import { STRIPE_LINKS } from '../data/stripeLinks';
+import { ArrowRight, Star, Shield, Leaf, Heart, RefreshCw, ExternalLink } from 'lucide-react';
 
 export const Home: React.FC = () => {
   useEffect(() => {
@@ -11,7 +12,6 @@ export const Home: React.FC = () => {
       metaDescription.setAttribute("content", "Discover 100% natural, ethically sourced skincare. Glow & Green offers premium, plant-powered solutions for healthy, radiant skin without the toxic chemicals. Shop our eco-friendly collection today.");
     }
   }, []);
-  // Select top 3 products as featured
   const featuredProducts = products.slice(0, 3);
 
   const steps = [
@@ -39,7 +39,6 @@ export const Home: React.FC = () => {
         <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Hero Left */}
             <div className="lg:col-span-7 space-y-8 text-center lg:text-left">
               <span className="inline-flex items-center space-x-2 bg-emerald-50 text-emerald-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-100">
                 <SparklesIcon className="h-3.5 w-3.5" />
@@ -68,7 +67,6 @@ export const Home: React.FC = () => {
               </div>
             </div>
 
-            {/* Hero Right: Clean Organic Visual */}
             <div className="lg:col-span-5 relative flex justify-center">
               <div className="relative w-72 h-96 sm:w-80 sm:h-[420px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-emerald-50">
                 <img
@@ -91,7 +89,6 @@ export const Home: React.FC = () => {
                   </p>
                 </div>
               </div>
-              {/* Floating Badge */}
               <div className="absolute -top-4 -right-4 sm:-right-8 bg-amber-400 text-stone-900 rounded-full h-24 w-24 flex flex-col items-center justify-center text-center p-2 shadow-xl border-2 border-white transform rotate-12">
                 <span className="text-[10px] uppercase font-bold tracking-widest">Pure</span>
                 <span className="text-xl font-extrabold font-serif">100%</span>
@@ -150,52 +147,66 @@ export const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredProducts.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white rounded-2xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full group"
-              >
-                {/* Product Image */}
-                <div className="relative h-64 overflow-hidden bg-stone-100">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <span className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm text-emerald-900 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-100 uppercase tracking-widest">
-                    {product.category}
-                  </span>
-                </div>
+            {featuredProducts.map((product) => {
+              const stripeLink = STRIPE_LINKS[product.id];
+              return (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-2xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full group"
+                >
+                  <div className="relative h-64 overflow-hidden bg-stone-100">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <span className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm text-emerald-900 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-100 uppercase tracking-widest">
+                      {product.category}
+                    </span>
+                  </div>
 
-                {/* Product Info */}
-                <div className="p-6 flex flex-col flex-grow space-y-3">
-                  <span className="text-xs text-stone-500">{product.volume}</span>
-                  <h3 className="text-xl font-serif font-semibold text-stone-900 group-hover:text-emerald-800 transition-colors">
-                    {product.name}
-                  </h3>
-                  <p className="text-stone-500 text-xs italic">{product.subtitle}</p>
-                  <p className="text-stone-600 text-sm line-clamp-2 leading-relaxed flex-grow">
-                    {product.description}
-                  </p>
+                  <div className="p-6 flex flex-col flex-grow space-y-3">
+                    <span className="text-xs text-stone-500">{product.volume}</span>
+                    <h3 className="text-xl font-serif font-semibold text-stone-900 group-hover:text-emerald-800 transition-colors">
+                      {product.name}
+                    </h3>
+                    <p className="text-stone-500 text-xs italic">{product.subtitle}</p>
+                    <p className="text-stone-600 text-sm line-clamp-2 leading-relaxed flex-grow">
+                      {product.description}
+                    </p>
 
-                  <div className="pt-4 border-t border-stone-50 flex items-center justify-between">
-                    <div>
-                      <span className="text-stone-400 text-xs line-through block">${product.price.toFixed(2)}</span>
-                      <span className="text-emerald-800 font-bold text-lg">
-                        ${product.subscriptionPrice.toFixed(2)}{" "}
-                        <span className="text-[10px] font-normal text-stone-500">/ mo</span>
-                      </span>
+                    <div className="pt-4 border-t border-stone-50 flex items-center justify-between">
+                      <div>
+                        <span className="text-stone-400 text-xs line-through block">${product.price.toFixed(2)}</span>
+                        <span className="text-emerald-800 font-bold text-lg">
+                          ${product.subscriptionPrice.toFixed(2)}{" "}
+                          <span className="text-[10px] font-normal text-stone-500">/ mo</span>
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {stripeLink && (
+                          <a
+                            href={stripeLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 text-xs font-bold rounded-full bg-amber-400 text-stone-900 hover:bg-amber-500 transition-all duration-200 shadow-sm hover:shadow flex items-center gap-1"
+                          >
+                            Buy Now — ${product.price.toFixed(2)}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                        <Link
+                          to={`/product/${product.id}`}
+                          className="px-4 py-2 text-xs font-semibold rounded-full border border-emerald-800 text-emerald-800 hover:bg-emerald-800 hover:text-white transition-all duration-200"
+                        >
+                          View Details
+                        </Link>
+                      </div>
                     </div>
-                    <Link
-                      to={`/product/${product.id}`}
-                      className="px-4 py-2 text-xs font-semibold rounded-full border border-emerald-800 text-emerald-800 hover:bg-emerald-800 hover:text-white transition-all duration-200"
-                    >
-                      View Details
-                    </Link>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -289,7 +300,6 @@ export const Home: React.FC = () => {
   );
 };
 
-// Help helper icon component for clean visual
 const SparklesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
