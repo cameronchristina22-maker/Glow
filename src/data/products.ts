@@ -29,7 +29,7 @@ export const products: Product[] = [
     directions: "Massage 1-2 pumps onto damp face and neck in circular motions. Rinse thoroughly with lukewarm water. Use morning and night.",
     price: 28.00,
     subscriptionPrice: 23.80,
-    image: "https://images.unsplash.com/photo-1608248597481-496100c8c836?auto=format&fit=crop&w=600&q=80",
+    image: "/verdant-dew-cleanser.png",
     category: "Cleanser",
     volume: "120ml / 4.0 fl oz"
   },
@@ -48,7 +48,7 @@ export const products: Product[] = [
     directions: "After cleansing, mist generously over entire face and neck. Can also be applied with a cotton pad. Follow immediately with Phyto-Glow Serum.",
     price: 32.00,
     subscriptionPrice: 27.20,
-    image: "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=600&q=80",
+    image: "/emerald-mist-toner.png",
     category: "Toner",
     volume: "100ml / 3.4 fl oz"
   },
@@ -67,7 +67,7 @@ export const products: Product[] = [
     directions: "Apply 3-4 drops to clean, toned skin. Gently pat into face and neck. Allow to absorb for 2 minutes before applying Luminous Leaf Moisturizer.",
     price: 48.00,
     subscriptionPrice: 40.80,
-    image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80",
+    image: "/phyto-glow-serum-v2.png",
     category: "Serum",
     volume: "30ml / 1.0 fl oz"
   },
@@ -86,7 +86,7 @@ export const products: Product[] = [
     directions: "Massage a pea-sized amount onto face and neck after serum application. Perfect for use morning and night under makeup.",
     price: 38.00,
     subscriptionPrice: 32.30,
-    image: "https://images.unsplash.com/photo-1601049676099-e7ed07d825b0?auto=format&fit=crop&w=600&q=80",
+    image: "/luminous-leaf-moisturizer.png",
     category: "Moisturizer",
     volume: "50ml / 1.7 fl oz"
   },
