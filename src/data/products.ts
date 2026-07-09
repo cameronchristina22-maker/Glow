@@ -105,7 +105,7 @@ export const products: Product[] = [
     directions: "Warm 2-3 drops in your palms and press gently into clean face, neck, and décolleté as the final step of your evening skincare routine.",
     price: 54.00,
     subscriptionPrice: 45.90,
-    image: "https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=600&q=80",
+    image: "/aura-bloom-face-oil.png",
     category: "Face Oil",
     volume: "30ml / 1.0 fl oz"
   }
